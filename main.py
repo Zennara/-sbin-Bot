@@ -135,6 +135,17 @@ async def on_message(message):
     if len(messagecontent.split(" ",2)) >= 3:
       await message.channel.send("```\n"+message.content.split(" ",2)[2]+"\n```")
 
+  #find command
+  if messagecontent.startswith(prefix+" find"):
+    splits = messagecontent.split(" ", 2)
+    if message.mentions:
+      splits[2] = message.mentions[0].name
+    for mbr in message.author.guild.members:  
+      if splits[2] in mbr.name.lower():
+        await message.channel.send("```\n"+mbr.name+"#"+mbr.discriminator+"\nStatus: "+mbr.raw_status+"\nCreated: "+str(mbr.created_at)+"\nJoined: "+str(mbr.joined_at)+"\nID: "+str(mbr.id)+"\n```")
+      print(splits[2] +" | "+ mbr.name)
+        
+  
   #ls command
   if messagecontent.startswith(prefix+" ls"):
     if messagecontent == prefix+" ls roles":
