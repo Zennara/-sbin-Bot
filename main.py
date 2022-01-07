@@ -26,10 +26,11 @@ except:
 intents = discord.Intents.all() #declare what Intents you use, these will be checked in the Discord dev portal
 client = discord.Client(intents=intents)
 
-
 @client.event
 async def on_ready():
   print("\n/sbin/ Ready.\n")
+  global startDate
+  startDate = datetime.now()
   await client.change_presence(activity=discord.Activity(type=discord.ActivityType.playing, name="with some code."))
 
 @client.event
@@ -61,10 +62,10 @@ async def on_message(message):
     with open("database.json", 'w') as f:
       json.dump(str(data2), f)
 
-  #write your commands below!
-  #example command:
-    if messagecontent == prefix+"ping":
-      await message.channel.send("pong")
+  #ping command
+    if messagecontent == prefix+" ping":
+      global startDate
+      await message.channel.send("```\n/sbin/ has been online for " + str(datetime.now()-startDate) + "\n```")
 
 @client.event
 async def on_guild_join(guild):
