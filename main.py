@@ -91,11 +91,6 @@ async def on_message(message):
     if len(history) >= 20:
       del history[0]
     history.append(str(message.author.id) +"|"+ messagecontent)
-
-    #this will clear the database if something is broken, WARNING: will delete all entries
-    if messagecontent == "$ clear":
-      #my database entries are seperates by server id for each key. this works MOST of the time unless you have a large amount of data
-      db[str(message.guild.id)] = {"prefix": "$", "role_reactions":[]}
   
     #get uptime
     global startDate
@@ -110,6 +105,11 @@ async def on_message(message):
           count += 1
           text = text+ str(count)+(" "*(4-len(str(count)))) + x[19:] + "\n"
       await message.channel.send("```\n"+text+"\n```")
+
+    #this will clear the database if something is broken, WARNING: will delete all entries
+    elif messagecontent == "$ clear":
+      #my database entries are seperates by server id for each key. this works MOST of the time unless you have a large amount of data
+      db[str(message.guild.id)] = {"prefix": "$", "role_reactions":[]}
         
     #ping command
     elif messagecontent == prefix+" ping":
@@ -120,7 +120,7 @@ async def on_message(message):
       await message.channel.send("```\n/sbin/ Bot\nAuthor:       Zennara#8377\nCreated:      1/7/2021\nPublic:       False\nDescription:  A custom bot for this server. This can't be found anywhere else.\n```")
   
     #neofeatch
-    if messagecontent == prefix+" neofetch":
+    elif messagecontent == prefix+" neofetch":
       await message.channel.send("""```
            , - ~ ~ ~ - ,             /sbin/ Discord Bot
        , '               ' ,       . ------------------
