@@ -63,9 +63,9 @@ async def on_message(message):
       json.dump(str(data2), f)
 
   #ping command
-    if messagecontent == prefix+" ping":
-      global startDate
-      await message.channel.send("```\n/sbin/ has been online for " + str(datetime.now()-startDate) + "\n```")
+  if messagecontent == prefix+" ping":
+    global startDate
+    await message.channel.send("```\n/sbin/ has been online for " + str(datetime.now()-startDate) + "\n```")
 
 @client.event
 async def on_guild_join(guild):
