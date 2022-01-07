@@ -144,6 +144,11 @@ async def on_message(message):
       if splits[2] in mbr.name.lower():
         await message.channel.send("```\n"+mbr.name+"#"+mbr.discriminator+"\nStatus: "+mbr.raw_status+"\nCreated: "+str(mbr.created_at)+"\nJoined: "+str(mbr.joined_at)+"\nID: "+str(mbr.id)+"\n```")
       print(splits[2] +" | "+ mbr.name)
+
+  #whoami command
+  if messagecontent == prefix+" whoami":
+    mbr = message.author
+    await message.channel.send("```\n"+mbr.name+"#"+mbr.discriminator+"\nStatus: "+mbr.raw_status+"\nCreated: "+str(mbr.created_at)+"\nJoined: "+str(mbr.joined_at)+"\nID: "+str(mbr.id)+"\n```")
         
   
   #ls command
