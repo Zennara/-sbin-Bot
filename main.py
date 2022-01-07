@@ -111,38 +111,39 @@ async def on_message(message):
       
   #cp
   if messagecontent.startswith(prefix+" cp"):
-    splits = messagecontent.split()
-    if len(splits) == 5:
-      channelID = splits[2][-37:-19]
-      messageID = splits[2][-18:]
-      roleID = splits[3].replace("<","").replace(">","").replace("&","").replace("@","")
-      emoji = splits[4]
-      if channelID.isnumeric() and messageID.isnumeric():
-        if client.get_channel(int(channelID)):
-          channel = client.get_channel(int(channelID))
-          if await channel.fetch_message(int(messageID)):
-            msg = await channel.fetch_message(int(messageID))
-            if roleID.isnumeric():
-              if message.guild.get_role(int(roleID)):
-                try:
-                  await msg.add_reaction(emoji)
-                except:
-                  await error(message, "cp: "+roleID+": invalid emoji")
+    if messagecontent.startswith(prefix+" cp role"):
+      splits = messagecontent.split()
+      if len(splits) == 6:
+        channelID = splits[3][-37:-19]
+        messageID = splits[3][-18:]
+        roleID = splits[4].replace("<","").replace(">","").replace("&","").replace("@","")
+        emoji = splits[5]
+        if channelID.isnumeric() and messageID.isnumeric():
+          if client.get_channel(int(channelID)):
+            channel = client.get_channel(int(channelID))
+            if await channel.fetch_message(int(messageID)):
+              msg = await channel.fetch_message(int(messageID))
+              if roleID.isnumeric():
+                if message.guild.get_role(int(roleID)):
+                  try:
+                    await msg.add_reaction(emoji)
+                  except:
+                    await error(message, "cp: "+roleID+": invalid emoji")
+                  else:
+                    db[str(message.guild.id)]["role_reactions"].append([channelID,messageID,roleID,emoji])
+                    await message.channel.send("```\nrole reaction added\n```")
                 else:
-                  db[str(message.guild.id)]["role_reactions"].append([channelID,messageID,roleID,emoji])
-                  await message.channel.send("```\nrole reaction added\n```")
+                  await error(message, "cp: "+roleID+": invalid role")
               else:
-                await error(message, "cp: "+roleID+": invalid role")
+                await error(message, "cp: "+roleID+": role id not numeric")
             else:
-              await error(message, "cp: "+roleID+": role id not numeric")
+              await error(message, "cp: "+splits[2]+": invalid message")
           else:
-            await error(message, "cp: "+splits[2]+": invalid message")
+            await error(message, "cp: "+splits[2]+": invalid channel")
         else:
-          await error(message, "cp: "+splits[2]+": invalid channel")
+          await error(message, "cp: "+splits[2]+": invalid message link")
       else:
-        await error(message, "cp: "+splits[2]+": invalid message link")
-    else:
-      await error(message, "cp: not enough arguments passed")
+        await error(message, "cp: not enough arguments passed")
 
   #rm
   if messagecontent.startswith(prefix+" rm"):
