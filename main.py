@@ -54,7 +54,7 @@ async def on_raw_reaction_remove(payload):
 
 @client.event
 async def on_member_join(member):
-  member.add_roles(member.guild.get_role(joinrole), atomic=True)
+  await member.add_roles(member.guild.get_role(joinrole), atomic=True)
 
 history = []
 @client.event
