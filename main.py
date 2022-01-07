@@ -24,6 +24,9 @@ except:
 intents = discord.Intents.all() #declare what Intents you use, these will be checked in the Discord dev portal
 client = discord.Client(intents=intents)
 
+#declare vars
+joinrole = 928770525830971403
+
 #error message
 async def error(message, code):
   await message.channel.send("```\n"+code+"\n```")
@@ -48,6 +51,10 @@ async def on_raw_reaction_remove(payload):
     for role in client.get_guild(int(payload.guild_id)).roles:
       if [str(payload.channel_id),str(payload.message_id),str(role.id),str(payload.emoji.name)] in db[str(payload.guild_id)]["role_reactions"]:
         await client.get_guild(int(payload.guild_id)).get_member(int(payload.user_id)).remove_roles(client.get_guild(int(payload.guild_id)).get_role(int(role.id)), atomic=True)
+
+@client.event
+async def on_member_join(member):
+  member.add_roles(member.guild.get_role(joinrole), atomic=True)
 
 history = []
 @client.event
