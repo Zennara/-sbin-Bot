@@ -10,6 +10,8 @@ import asyncio #not needed unless creating loop tasks etc (you'll run into it)
 import json #to write db to a json file
 import requests #to check discord api for limits/bans
 from replit import db #database storage
+import time
+from datetime import datetime
 
 #api limit checker
 #rate limits occur when you access the api too much. You can view Discord.py's api below. There it will tell you whether an action will access the api.
@@ -40,9 +42,9 @@ async def on_message(message):
   messagecontent = message.content.lower()
 
   #this will clear the database if something is broken, WARNING: will delete all entries
-  if messagecontent == "z/clear":
+  if messagecontent == "$ clear":
     #my database entries are seperates by server id for each key. this works MOST of the time unless you have a large amount of data
-    db[str(message.guild.id)] = {"prefix": "z/"}
+    db[str(message.guild.id)] = {"prefix": "$"}
 
   #get prefix
   prefix = db[str(message.guild.id)]["prefix"]
@@ -66,7 +68,7 @@ async def on_message(message):
 
 @client.event
 async def on_guild_join(guild):
-  db[str(guild.id)] = {"prefix": "i/"} #for database support
+  db[str(guild.id)] = {"prefix": "$"} #for database support
 
 
 keep_alive.keep_alive() 
