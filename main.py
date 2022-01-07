@@ -90,6 +90,11 @@ async def on_message(message):
        ' - , _ _ _ , - '         . Status: Custom, Private
     ```""")
 
+  #echo command
+  if messagecontent.startswith(prefix+" echo"):
+    if len(messagecontent.split(" ",2)) >= 3:
+      await message.channel.send("```\n"+message.content.split(" ",2)[2]+"\n```")
+
 @client.event
 async def on_guild_join(guild):
   db[str(guild.id)] = {"prefix": "$"} #for database support
