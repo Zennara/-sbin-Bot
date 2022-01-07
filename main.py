@@ -1,6 +1,4 @@
 #Discord.py Bot Template, by Zennara#8377
-#This template is a compilation of code to make it easier to design your own Discord.py Bot
-#I made this for my own use, but don't care who uses it, but please credit me if someone asks :)
 
 #imports
 import discord #api
@@ -168,6 +166,10 @@ async def on_message(message):
           await error(message, "rm: -role: invalid message link")
       else:
         await error(message, "rm: -role: not enough arguments passed")
+
+  #pwd
+  if messagecontent == prefix+" pwd":
+    await message.channel.send("```\nhttps://replit.com/@KeaganLandfried/sbin-bot\n```")
   
   
 @client.event
