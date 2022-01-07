@@ -26,12 +26,16 @@ except:
 intents = discord.Intents.all() #declare what Intents you use, these will be checked in the Discord dev portal
 client = discord.Client(intents=intents)
 
+#error message
+async def error(message, code):
+  await message.channel.send("```\n"+code+"\n```")
+
 @client.event
 async def on_ready():
   print("\n/sbin/ Ready.\n")
   global startDate
   startDate = datetime.now()
-  await client.change_presence(activity=discord.Activity(type=discord.ActivityType.playing, name="with some code."))
+  await client.change_presence(activity=discord.Activity(type=discord.ActivityType.playing, name="in the shell"))
 
 @client.event
 async def on_message(message):
@@ -45,7 +49,7 @@ async def on_message(message):
   #this will clear the database if something is broken, WARNING: will delete all entries
   if messagecontent == "$ clear":
     #my database entries are seperates by server id for each key. this works MOST of the time unless you have a large amount of data
-    db[str(message.guild.id)] = {"prefix": "$"}
+    db[str(message.guild.id)] = {"prefix": "$", "role_reactions":[]}
 
   #get prefix
   prefix = db[str(message.guild.id)]["prefix"]
@@ -95,6 +99,16 @@ async def on_message(message):
     if len(messagecontent.split(" ",2)) >= 3:
       await message.channel.send("```\n"+message.content.split(" ",2)[2]+"\n```")
 
+  #ls command
+  if messagecontent.startswith(prefix+" ls"):
+    if messagecontent == prefix+" ls roles":
+      text = "```\nno role reactions found\n```"
+      if db[str(message.guild.id)]["role_reactions"]:
+        text = "```\n"
+        for role in db[str(message.guild.id)]["role_reactions"]:
+          text += "#"+str(client.get_channel(int(role[0])))+"   "+str(role[1])+"   "+str(message.guild.get_role(int(role[2])))+"   "+str(role[3]) + "\n"
+      await message.channel.send(text+"\n```")
+      
   #cp
   if messagecontent.startswith(prefix+" cp"):
     splits = messagecontent.split()
@@ -103,7 +117,6 @@ async def on_message(message):
       messageID = splits[2][-18:]
       roleID = splits[3].replace("<","").replace(">","").replace("&","").replace("@","")
       emoji = splits[4].replace(">","")[-18:]
-      print(emoji)
       if channelID.isnumeric() and messageID.isnumeric():
         if client.get_channel(int(channelID)):
           channel = client.get_channel(int(channelID))
@@ -114,9 +127,22 @@ async def on_message(message):
                 try:
                   await msg.add_reaction(emoji)
                 except:
-                  print("no")
+                  await error(message, "cp: "+roleID+": invalid emoji")
                 else:
-                  db[str(message.guild.id)]["role_reactions"] = [channelID,messageID,roleID,emoji]
+                  db[str(message.guild.id)]["role_reactions"].append([channelID,messageID,roleID,emoji])
+                  await message.channel.send("```\nrole reaction added\n```")
+              else:
+                await error(message, "cp: "+roleID+": invalid role")
+            else:
+              await error(message, "cp: "+roleID+": role id not numeric")
+          else:
+            await error(message, "cp: "+splits[2]+": invalid message")
+        else:
+          await error(message, "cp: "+splits[2]+": invalid channel")
+      else:
+        await error(message, "cp: "+splits[2]+": channel or message not numeric")
+    else:
+      await error(message, "cp: not enough arguments passed")
   
   
 @client.event
