@@ -69,17 +69,6 @@ async def on_message(message):
   #convert the message to all lowercase
   messagecontent = message.content.lower()
 
-  #add to history
-  if messagecontent.startswith(prefix):
-    if len(history) >= 20:
-      del history[0]
-    history.append(str(message.author.id) +"|"+ messagecontent)
-
-  #this will clear the database if something is broken, WARNING: will delete all entries
-  if messagecontent == "$ clear":
-    #my database entries are seperates by server id for each key. this works MOST of the time unless you have a large amount of data
-    db[str(message.guild.id)] = {"prefix": "$", "role_reactions":[]}
-
   #this is to dump your databse into database.json. Change this to FALSE to stop this.
   DUMP = True
   if DUMP:
@@ -92,138 +81,162 @@ async def on_message(message):
     with open("database.json", 'w') as f:
       json.dump(str(data2), f)
 
-  #get uptime
-  global startDate
-  uptime = datetime.now() - startDate
-
-  #history command
-  if messagecontent == prefix+" history":
-    text = ""
-    count = 0
-    for x in history:
-      if x.startswith(str(message.author.id)):
-        count += 1
-        text = text+ str(count)+(" "*(4-len(str(count)))) + x[19:] + "\n"
-    await message.channel.send("```\n"+text+"\n```")
+  #add to history
+  if messagecontent.startswith(prefix) and messagecontent.strip() != "$":
+    #check if prefix not spaced
+    if not messagecontent.startswith("$ "):
+      await error(message, "invalid usage, commands start with $_")
+      return
       
-  #ping command
-  if messagecontent == prefix+" ping":
-    await message.channel.send("```\n/sbin/ has been online for " + str(uptime) + "\n```")
+    if len(history) >= 20:
+      del history[0]
+    history.append(str(message.author.id) +"|"+ messagecontent)
 
-  #uname command
-  if messagecontent == prefix+" uname":
-    await message.channel.send("```\n/sbin/ Bot\nAuthor:       Zennara#8377\nCreated:      1/7/2021\nPublic:       False\nDescription:  A custom bot for this server. This can't be found anywhere else.\n```")
-
-  #neofeatch
-  if messagecontent == prefix+" neofetch":
-    await message.channel.send("""```
-         , - ~ ~ ~ - ,             /sbin/ Discord Bot
-     , '               ' ,       . ------------------
-   ,      .                ,     . Host: repl.it
-  ,     /#|#\               ,    . Uptime: """+str(uptime)+"""
- ,      # |                  ,   . Version: 1.0.0
- ,      \#|#\                ,   . Library: Discord.py 1.7.3
- ,        | #                ,   . Packages: 9
-  ,     \#|#/  ______       ,    . Theme: Linux Terminal
-   ,      '                ,     . Prefix: $
-     ,                   ,       . Author: Zennara#8377
-       ' - , _ _ _ , - '         . Status: Custom, Private
-    ```""")
-
-  #echo command
-  if messagecontent.startswith(prefix+" echo"):
-    if len(messagecontent.split(" ",2)) >= 3:
-      await message.channel.send("```\n"+message.content.split(" ",2)[2]+"\n```")
-
-  #find command
-  if messagecontent.startswith(prefix+" find"):
-    splits = messagecontent.split(" ", 2)
-    if message.mentions:
-      splits[2] = message.mentions[0].name
-    for mbr in message.author.guild.members:  
-      if splits[2] in mbr.name.lower():
-        await message.channel.send("```\n"+mbr.name+"#"+mbr.discriminator+"\nStatus: "+mbr.raw_status+"\nCreated: "+str(mbr.created_at)+"\nJoined: "+str(mbr.joined_at)+"\nID: "+str(mbr.id)+"\n```")
-      print(splits[2] +" | "+ mbr.name)
-
-  #whoami command
-  if messagecontent == prefix+" whoami":
-    mbr = message.author
-    await message.channel.send("```\n"+mbr.name+"#"+mbr.discriminator+"\nStatus: "+mbr.raw_status+"\nCreated: "+str(mbr.created_at)+"\nJoined: "+str(mbr.joined_at)+"\nID: "+str(mbr.id)+"\n```")
-        
+    #this will clear the database if something is broken, WARNING: will delete all entries
+    if messagecontent == "$ clear":
+      #my database entries are seperates by server id for each key. this works MOST of the time unless you have a large amount of data
+      db[str(message.guild.id)] = {"prefix": "$", "role_reactions":[]}
   
-  #ls command
-  if messagecontent.startswith(prefix+" ls"):
-    if messagecontent == prefix+" ls roles":
-      text = "```\nno role reactions found"
-      if db[str(message.guild.id)]["role_reactions"]:
-        text = "```\n"
-        for role in db[str(message.guild.id)]["role_reactions"]:
-          text += "#"+str(client.get_channel(int(role[0])))+"   "+str(role[1])+"   "+str(message.guild.get_role(int(role[2])))+"   "+str(role[3]) + "\n"
-      await message.channel.send(text+"\n```")
-      
-  #cp
-  if messagecontent.startswith(prefix+" cp"):
-    if messagecontent.startswith(prefix+" cp role"):
-      splits = messagecontent.split()
-      if len(splits) == 6:
-        channelID = splits[3][-37:-19]
-        messageID = splits[3][-18:]
-        roleID = splits[4].replace("<","").replace(">","").replace("&","").replace("@","")
-        emoji = splits[5]
-        if channelID.isnumeric() and messageID.isnumeric():
-          if client.get_channel(int(channelID)):
-            channel = client.get_channel(int(channelID))
-            if await channel.fetch_message(int(messageID)):
-              msg = await channel.fetch_message(int(messageID))
-              if roleID.isnumeric():
-                if message.guild.get_role(int(roleID)):
-                  try:
-                    await msg.add_reaction(emoji)
-                  except:
-                    await error(message, "cp: "+roleID+": invalid emoji")
+    #get uptime
+    global startDate
+    uptime = datetime.now() - startDate
+  
+    #history command
+    if messagecontent == prefix+" history":
+      text = ""
+      count = 0
+      for x in history:
+        if x.startswith(str(message.author.id)):
+          count += 1
+          text = text+ str(count)+(" "*(4-len(str(count)))) + x[19:] + "\n"
+      await message.channel.send("```\n"+text+"\n```")
+        
+    #ping command
+    elif messagecontent == prefix+" ping":
+      await message.channel.send("```\n/sbin/ has been online for " + str(uptime) + "\n```")
+  
+    #uname command
+    elif messagecontent == prefix+" uname":
+      await message.channel.send("```\n/sbin/ Bot\nAuthor:       Zennara#8377\nCreated:      1/7/2021\nPublic:       False\nDescription:  A custom bot for this server. This can't be found anywhere else.\n```")
+  
+    #neofeatch
+    if messagecontent == prefix+" neofetch":
+      await message.channel.send("""```
+           , - ~ ~ ~ - ,             /sbin/ Discord Bot
+       , '               ' ,       . ------------------
+     ,      .                ,     . Host: repl.it
+    ,     /#|#\               ,    . Uptime: """+str(uptime)+"""
+   ,      # |                  ,   . Version: 1.0.0
+   ,      \#|#\                ,   . Library: Discord.py 1.7.3
+   ,        | #                ,   . Packages: 9
+    ,     \#|#/  ______       ,    . Theme: Linux Terminal
+     ,      '                ,     . Prefix: $
+       ,                   ,       . Author: Zennara#8377
+         ' - , _ _ _ , - '         . Status: Custom, Private
+      ```""")
+  
+    #echo command
+    elif messagecontent.startswith(prefix+" echo"):
+      if len(messagecontent.split(" ",2)) >= 3:
+        await message.channel.send("```\n"+message.content.split(" ",2)[2]+"\n```")
+  
+    #find command
+    elif messagecontent.startswith(prefix+" find"):
+      splits = messagecontent.split(" ", 2)
+      if message.mentions:
+        splits[2] = message.mentions[0].name
+      for mbr in message.author.guild.members:  
+        if splits[2] in mbr.name.lower():
+          await message.channel.send("```\n"+mbr.name+"#"+mbr.discriminator+"\nStatus: "+mbr.raw_status+"\nCreated: "+str(mbr.created_at)+"\nJoined: "+str(mbr.joined_at)+"\nID: "+str(mbr.id)+"\n```")
+        print(splits[2] +" | "+ mbr.name)
+  
+    #whoami command
+    elif messagecontent == prefix+" whoami":
+      mbr = message.author
+      await message.channel.send("```\n"+mbr.name+"#"+mbr.discriminator+"\nStatus: "+mbr.raw_status+"\nCreated: "+str(mbr.created_at)+"\nJoined: "+str(mbr.joined_at)+"\nID: "+str(mbr.id)+"\n```")
+          
+    
+    #ls command
+    elif messagecontent.startswith(prefix+" ls"):
+      if messagecontent == prefix+" ls roles":
+        text = "```\nno role reactions found"
+        if db[str(message.guild.id)]["role_reactions"]:
+          text = "```\n"
+          for role in db[str(message.guild.id)]["role_reactions"]:
+            text += "#"+str(client.get_channel(int(role[0])))+"   "+str(role[1])+"   "+str(message.guild.get_role(int(role[2])))+"   "+str(role[3]) + "\n"
+        await message.channel.send(text+"\n```")
+        
+    #cp
+    elif messagecontent.startswith(prefix+" cp"):
+      if messagecontent.startswith(prefix+" cp role"):
+        splits = messagecontent.split()
+        if len(splits) == 6:
+          channelID = splits[3][-37:-19]
+          messageID = splits[3][-18:]
+          roleID = splits[4].replace("<","").replace(">","").replace("&","").replace("@","")
+          emoji = splits[5]
+          if channelID.isnumeric() and messageID.isnumeric():
+            if client.get_channel(int(channelID)):
+              channel = client.get_channel(int(channelID))
+              if await channel.fetch_message(int(messageID)):
+                msg = await channel.fetch_message(int(messageID))
+                if roleID.isnumeric():
+                  if message.guild.get_role(int(roleID)):
+                    try:
+                      await msg.add_reaction(emoji)
+                    except:
+                      await error(message, "cp: "+roleID+": invalid emoji")
+                    else:
+                      db[str(message.guild.id)]["role_reactions"].append([channelID,messageID,roleID,emoji])
+                      await message.channel.send("```\nrole reaction added\n```")
                   else:
-                    db[str(message.guild.id)]["role_reactions"].append([channelID,messageID,roleID,emoji])
-                    await message.channel.send("```\nrole reaction added\n```")
+                    await error(message, "cp: "+roleID+": invalid role")
                 else:
-                  await error(message, "cp: "+roleID+": invalid role")
+                  await error(message, "cp: "+roleID+": role id not numeric")
               else:
-                await error(message, "cp: "+roleID+": role id not numeric")
+                await error(message, "cp: "+splits[2]+": invalid message")
             else:
-              await error(message, "cp: "+splits[2]+": invalid message")
+              await error(message, "cp: "+splits[2]+": invalid channel")
           else:
-            await error(message, "cp: "+splits[2]+": invalid channel")
+            await error(message, "cp: "+splits[2]+": invalid message link")
         else:
-          await error(message, "cp: "+splits[2]+": invalid message link")
-      else:
-        await error(message, "cp: not enough arguments passed")
+          await error(message, "cp: not enough arguments passed")
+  
+    #rm
+    elif messagecontent.startswith(prefix+" rm"):
+      #rm roles
+      if messagecontent.startswith(prefix+" rm role"):
+        splits = messagecontent.split()
+        if len(splits) == 6:
+          channelID = splits[3][-37:-19]
+          messageID = splits[3][-18:]
+          roleID = splits[4].replace("<","").replace(">","").replace("&","").replace("@","")
+          emoji = splits[5]
+          if channelID.isnumeric() and messageID.isnumeric():
+            if [channelID,messageID,roleID,emoji] in db[str(message.guild.id)]["role_reactions"]:
+              db[str(message.guild.id)]["role_reactions"].remove([channelID,messageID,roleID,emoji])
+              channel = client.get_channel(int(channelID))
+              msg = await channel.fetch_message(int(messageID))
+              await msg.remove_reaction(emoji, message.guild.get_member(client.user.id))
+              await message.channel.send("```\nrole reaction removed\n```")
+            else:
+              await error(message, "rm: -role: no such reaction role")
+          else:
+            await error(message, "rm: -role: invalid message link")
+        else:
+          await error(message, "rm: -role: not enough arguments passed")
+  
+    #pwd
+    elif messagecontent == prefix+" pwd":
+      await message.channel.send("```\nhttps://replit.com/@KeaganLandfried/sbin-bot\n```")
 
-  #rm
-  if messagecontent.startswith(prefix+" rm"):
-    #rm roles
-    if messagecontent.startswith(prefix+" rm role"):
+    #no command
+    else:
       splits = messagecontent.split()
-      if len(splits) == 6:
-        channelID = splits[3][-37:-19]
-        messageID = splits[3][-18:]
-        roleID = splits[4].replace("<","").replace(">","").replace("&","").replace("@","")
-        emoji = splits[5]
-        if channelID.isnumeric() and messageID.isnumeric():
-          if [channelID,messageID,roleID,emoji] in db[str(message.guild.id)]["role_reactions"]:
-            db[str(message.guild.id)]["role_reactions"].remove([channelID,messageID,roleID,emoji])
-            channel = client.get_channel(int(channelID))
-            msg = await channel.fetch_message(int(messageID))
-            await msg.remove_reaction(emoji, message.guild.get_member(client.user.id))
-            await message.channel.send("```\nrole reaction removed\n```")
-          else:
-            await error(message, "rm: -role: no such reaction role")
-        else:
-          await error(message, "rm: -role: invalid message link")
+      if len(splits) == 2:
+        await error(message, "Command '"+splits[1]+"' not found")
       else:
-        await error(message, "rm: -role: not enough arguments passed")
-
-  #pwd
-  if messagecontent == prefix+" pwd":
-    await message.channel.send("```\nhttps://replit.com/@KeaganLandfried/sbin-bot\n```")
+        await error(message, splits[1]+": command not found")
   
   
 @client.event
