@@ -49,22 +49,29 @@ async def on_raw_reaction_remove(payload):
       if [str(payload.channel_id),str(payload.message_id),str(role.id),str(payload.emoji.name)] in db[str(payload.guild_id)]["role_reactions"]:
         await client.get_guild(int(payload.guild_id)).get_member(int(payload.user_id)).remove_roles(client.get_guild(int(payload.guild_id)).get_role(int(role.id)), atomic=True)
 
+history = []
 @client.event
 async def on_message(message):
   #check for bots
   if message.author.bot:
     return
 
+  #get prefix
+  prefix = db[str(message.guild.id)]["prefix"]
+
   #convert the message to all lowercase
   messagecontent = message.content.lower()
+
+  #add to history
+  if messagecontent.startswith(prefix):
+    if len(history) >= 20:
+      del history[0]
+    history.append(str(message.author.id) +"|"+ messagecontent)
 
   #this will clear the database if something is broken, WARNING: will delete all entries
   if messagecontent == "$ clear":
     #my database entries are seperates by server id for each key. this works MOST of the time unless you have a large amount of data
     db[str(message.guild.id)] = {"prefix": "$", "role_reactions":[]}
-
-  #get prefix
-  prefix = db[str(message.guild.id)]["prefix"]
 
   #this is to dump your databse into database.json. Change this to FALSE to stop this.
   DUMP = True
@@ -81,6 +88,16 @@ async def on_message(message):
   #get uptime
   global startDate
   uptime = datetime.now() - startDate
+
+  #history command
+  if messagecontent == prefix+" history":
+    text = ""
+    count = 0
+    for x in history:
+      if x.startswith(str(message.author.id)):
+        count += 1
+        text = text+ str(count)+(" "*(4-len(str(count)))) + x[19:] + "\n"
+    await message.channel.send("```\n"+text+"\n```")
       
   #ping command
   if messagecontent == prefix+" ping":
