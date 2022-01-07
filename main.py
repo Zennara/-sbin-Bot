@@ -62,10 +62,33 @@ async def on_message(message):
     with open("database.json", 'w') as f:
       json.dump(str(data2), f)
 
+  #get uptime
+  global startDate
+  uptime = datetime.now() - startDate
+      
   #ping command
   if messagecontent == prefix+" ping":
-    global startDate
-    await message.channel.send("```\n/sbin/ has been online for " + str(datetime.now()-startDate) + "\n```")
+    await message.channel.send("```\n/sbin/ has been online for " + str(uptime) + "\n```")
+
+  #uname command
+  if messagecontent == prefix+" uname":
+    await message.channel.send("```\n/sbin/ Bot\nAuthor:       Zennara#8377\nCreated:      1/7/2021\nPublic:       False\nDescription:  A custom bot for this server. This can't be found anywhere else.\n```")
+
+  #neofeatch
+  if messagecontent == prefix+" neofetch":
+    await message.channel.send("""```
+         , - ~ ~ ~ - ,             /sbin/ Discord Bot
+     , '               ' ,       . ------------------
+   ,      .                ,     . Host: repl.it
+  ,     /#|#\               ,    . Uptime: """+str(uptime)+"""
+ ,      # |                  ,   . Version: 1.0.0
+ ,      \#|#\                ,   . Library: Discord.py 1.7.3
+ ,        | #                ,   . Packages: 9
+  ,     \#|#/  ______       ,    . Theme: Linux Terminal
+   ,      '                ,     . Prefix: $
+     ,                   ,       . Author: Zennara#8377
+       ' - , _ _ _ , - '         . Status: Custom, Private
+    ```""")
 
 @client.event
 async def on_guild_join(guild):
