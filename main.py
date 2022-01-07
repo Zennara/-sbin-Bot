@@ -31,6 +31,44 @@ joinrole = 928770525830971403
 async def error(message, code):
   await message.channel.send("```\n"+code+"\n```")
 
+async def checkCounters():
+  while True:
+    #discord API limits rates to twice every 10m for channel edits
+    await asyncio.sleep(600)
+
+    #update channels
+    for guild in client.guilds:
+      #get amount of bots
+      bots = 0
+      for member in guild.members:
+        if member.bot:
+          bots += 1
+      for channel in guild.stage_channels:
+        if channel.name.startswith("Members"):
+          if (channel.name != "Members: " + str(guild.member_count - bots)):
+            await channel.edit(name="Members: " + str(guild.member_count - bots))
+        if channel.name.startswith("Bots"):
+          if (channel.name != "Bots: " + str(bots)):
+            await channel.edit(name="Bots: " + str(bots))
+        if channel.name.startswith("Channels"):
+          if (channel.name != "Channels: " + str(len(guild.text_channels) + len(guild.voice_channels) - len(guild.categories))):
+            await channel.edit(name="Channels: " + str(len(guild.text_channels) + len(guild.voice_channels) - len(guild.categories)))
+        if channel.name.startswith("Text Channels"):
+          if (channel.name != "Text Channels: " + str(len(guild.text_channels))):
+            await channel.edit(name="Text Channels: " + str(len(guild.text_channels)))
+        if channel.name.startswith("Voice Channels"):
+          if (channel.name != "Voice Channels: " + str(len(guild.voice_channels))):
+            await channel.edit(name="Voice Channels: " + str(len(guild.voice_channels)))
+        if channel.name.startswith("Categories"):
+          if (channel.name != "Categories: " + str(len(guild.categories))):
+            await channel.edit(name="Categories: " + str(len(guild.categories)))
+        if channel.name.startswith("Roles"):
+          if (channel.name != "Roles: " + str(len(guild.roles))):
+            await channel.edit(name="Roles: " + str(len(guild.roles)))
+        if channel.name.startswith("Bans"):
+          if (channel.name != "Bans: " + str(len(await guild.bans()))):
+            await channel.edit(name="Bans: " + str(len(await guild.bans())))
+
 @client.event
 async def on_ready():
   print("\n/sbin/ Ready.\n")
@@ -243,6 +281,7 @@ async def on_message(message):
 async def on_guild_join(guild):
   db[str(guild.id)] = {"prefix": "$"} #for database support
 
+client.loop.create_task(checkCounters())
 
 keep_alive.keep_alive() 
 #keep the bot running after the window closes, use UptimeRobot to ping the website at least every <60min. to prevent the website from going to sleep, turning off the bot
