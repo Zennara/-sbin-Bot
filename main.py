@@ -102,7 +102,7 @@ async def on_message(message):
   #ls command
   if messagecontent.startswith(prefix+" ls"):
     if messagecontent == prefix+" ls roles":
-      text = "```\nno role reactions found\n```"
+      text = "```\nno role reactions found"
       if db[str(message.guild.id)]["role_reactions"]:
         text = "```\n"
         for role in db[str(message.guild.id)]["role_reactions"]:
@@ -116,7 +116,7 @@ async def on_message(message):
       channelID = splits[2][-37:-19]
       messageID = splits[2][-18:]
       roleID = splits[3].replace("<","").replace(">","").replace("&","").replace("@","")
-      emoji = splits[4].replace(">","")[-18:]
+      emoji = splits[4]
       if channelID.isnumeric() and messageID.isnumeric():
         if client.get_channel(int(channelID)):
           channel = client.get_channel(int(channelID))
@@ -140,9 +140,33 @@ async def on_message(message):
         else:
           await error(message, "cp: "+splits[2]+": invalid channel")
       else:
-        await error(message, "cp: "+splits[2]+": channel or message not numeric")
+        await error(message, "cp: "+splits[2]+": invalid message link")
     else:
       await error(message, "cp: not enough arguments passed")
+
+  #rm
+  if messagecontent.startswith(prefix+" rm"):
+    #rm roles
+    if messagecontent.startswith(prefix+" rm role"):
+      splits = messagecontent.split()
+      if len(splits) == 6:
+        channelID = splits[3][-37:-19]
+        messageID = splits[3][-18:]
+        roleID = splits[4].replace("<","").replace(">","").replace("&","").replace("@","")
+        emoji = splits[5]
+        if channelID.isnumeric() and messageID.isnumeric():
+          if [channelID,messageID,roleID,emoji] in db[str(message.guild.id)]["role_reactions"]:
+            db[str(message.guild.id)]["role_reactions"].remove([channelID,messageID,roleID,emoji])
+            channel = client.get_channel(int(channelID))
+            msg = await channel.fetch_message(int(messageID))
+            await msg.remove_reaction(emoji, message.guild.get_member(client.user.id))
+            await message.channel.send("```\nrole reaction removed\n```")
+          else:
+            await error(message, "rm: -role: no such reaction role")
+        else:
+          await error(message, "rm: -role: invalid message link")
+      else:
+        await error(message, "rm: -role: not enough arguments passed")
   
   
 @client.event
