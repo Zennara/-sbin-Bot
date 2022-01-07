@@ -95,6 +95,30 @@ async def on_message(message):
     if len(messagecontent.split(" ",2)) >= 3:
       await message.channel.send("```\n"+message.content.split(" ",2)[2]+"\n```")
 
+  #cp
+  if messagecontent.startswith(prefix+" cp"):
+    splits = messagecontent.split()
+    if len(splits) == 5:
+      channelID = splits[2][-37:-19]
+      messageID = splits[2][-18:]
+      roleID = splits[3].replace("<","").replace(">","").replace("&","").replace("@","")
+      emoji = splits[4].replace(">","")[-18:]
+      print(emoji)
+      if channelID.isnumeric() and messageID.isnumeric():
+        if client.get_channel(int(channelID)):
+          channel = client.get_channel(int(channelID))
+          if await channel.fetch_message(int(messageID)):
+            msg = await channel.fetch_message(int(messageID))
+            if roleID.isnumeric():
+              if message.guild.get_role(int(roleID)):
+                try:
+                  await msg.add_reaction(emoji)
+                except:
+                  print("no")
+                else:
+                  db[str(message.guild.id)]["role_reactions"] = [channelID,messageID,roleID,emoji]
+  
+  
 @client.event
 async def on_guild_join(guild):
   db[str(guild.id)] = {"prefix": "$"} #for database support
