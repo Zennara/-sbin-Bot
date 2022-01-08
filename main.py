@@ -80,14 +80,14 @@ async def on_ready():
 async def on_raw_reaction_add(payload):
   if payload.member.id != client.user.id:
     for role in payload.member.guild.roles:
-      if [str(payload.channel_id),str(payload.message_id),str(role.id),str(payload.emoji.name)] in db[str(payload.guild_id)]["role_reactions"]:
+      if [str(payload.channel_id),str(payload.message_id),str(role.id),str(payload.emoji)] in db[str(payload.guild_id)]["role_reactions"]:
         await payload.member.add_roles(payload.member.guild.get_role(int(role.id)), atomic=True)
 
 @client.event
 async def on_raw_reaction_remove(payload):
   if payload.user_id != client.user.id:
     for role in client.get_guild(int(payload.guild_id)).roles:
-      if [str(payload.channel_id),str(payload.message_id),str(role.id),str(payload.emoji.name)] in db[str(payload.guild_id)]["role_reactions"]:
+      if [str(payload.channel_id),str(payload.message_id),str(role.id),str(payload.emoji)] in db[str(payload.guild_id)]["role_reactions"]:
         await client.get_guild(int(payload.guild_id)).get_member(int(payload.user_id)).remove_roles(client.get_guild(int(payload.guild_id)).get_role(int(role.id)), atomic=True)
 
 @client.event
