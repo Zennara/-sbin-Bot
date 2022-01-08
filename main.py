@@ -268,6 +268,43 @@ async def on_message(message):
     elif messagecontent == prefix+" pwd":
       await message.channel.send("```\nhttps://replit.com/@KeaganLandfried/sbin-bot\n```")
 
+    #touch command - create embed
+    elif messagecontent.startswith(prefix+" touch"):
+      pass
+
+    #nano command - edit embed
+    elif messagecontent.startswith(prefix+" nano"):
+      pass
+
+    #cat command - display message contents
+    elif messagecontent.startswith(prefix+" cat"):
+      splits = messagecontent.split()
+      if len(splits) == 3:
+        channelID = splits[2][-37:-19]
+        messageID = splits[2][-18:]
+        if channelID.isnumeric() and messageID.isnumeric():
+          if client.get_channel(int(channelID)):
+            channel = client.get_channel(int(channelID))
+            if await channel.fetch_message(int(messageID)):
+              msg = await channel.fetch_message(int(messageID))
+              embedText = ""
+              if msg.embeds:
+                embedText = "["
+                for embed in msg.embeds:
+                  embedText = embedText + str(msg.embeds[0].to_dict()) + (", " if len(msg.embeds) != 1 else "")
+                embedText = embedText
+                embedText += "]"
+                embedText = embedText.replace(", ]", "]")
+              await message.channel.send("```\n"+msg.content + ("\n\n"+embedText if embedText != "" else "")+"\n```")
+            else:  
+              await error(message, "cat: "+splits[2]+": invalid message")
+          else:
+            await error(message, "cat: "+splits[2]+": invalid channel")
+        else:
+          await error(message, "cat: invalid message link")
+      else:
+        await error(message, "cat: not enough arguments passed")
+
     #no command
     else:
       splits = messagecontent.split()
@@ -275,7 +312,7 @@ async def on_message(message):
         await error(message, "Command '"+splits[1]+"' not found")
       else:
         await error(message, splits[1]+": command not found")
-  
+
   
 @client.event
 async def on_guild_join(guild):
