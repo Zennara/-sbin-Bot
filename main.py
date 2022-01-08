@@ -270,7 +270,27 @@ async def on_message(message):
 
     #touch command - create embed
     elif messagecontent.startswith(prefix+" touch"):
-      pass
+      splits = message.content.split(" ",3)
+      if len(splits) == 4:
+        if splits[2].isnumeric():
+          if message.guild.get_channel(int(splits[2])):
+            cnl = message.guild.get_channel(int(splits[2]))
+            if json.loads(splits[3].replace("'",'"')):
+              jsn = json.loads(splits[3].replace("'",'"'))
+              if discord.Embed.from_dict(jsn):
+                embed = discord.Embed.from_dict(jsn)
+                await cnl.send(embed=embed)
+                await message.channel.send("```\nEmbed message sent in #"+cnl.name+"\n```")
+              else:
+                await error(message, "touch: cannot load dict to embed")
+            else:
+              await error(message, "touch: cannot load to dictionary")
+          else:
+            await error(message, "touch: invalid channel")
+        else:
+          await error(message, "touch: channel id must be int or mention")
+      else:
+        await error(message, "touch: not enough arguments passed")
 
     #nano command - edit embed
     elif messagecontent.startswith(prefix+" nano"):
