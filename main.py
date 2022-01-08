@@ -270,8 +270,10 @@ async def on_message(message):
 
     #touch command - create embed
     elif messagecontent.startswith(prefix+" touch"):
-      splits = message.content.split(" ",3)
-      if len(splits) == 4:
+      splits = message.content.split(" ",4)
+      if len(splits) == 5:
+        channelID = splits[3][-37:-19]
+        messageID = splits[3][-18:]
         if splits[2].isnumeric():
           if message.guild.get_channel(int(splits[2])):
             cnl = message.guild.get_channel(int(splits[2]))
@@ -294,7 +296,34 @@ async def on_message(message):
 
     #nano command - edit embed
     elif messagecontent.startswith(prefix+" nano"):
-      pass
+      splits = message.content.split(" ",3)
+      if len(splits) == 4:
+        channelID = splits[2][-37:-19]
+        messageID = splits[2][-18:]
+        if channelID.isnumeric() and messageID.isnumeric():
+          if message.guild.get_channel(int(channelID)):
+            cnl = message.guild.get_channel(int(channelID))
+            if await cnl.fetch_message(int(messageID)):
+              msg = await cnl.fetch_message(int(messageID))
+              try:
+                jsn = json.loads(splits[3].replace("'",'"'))
+              except:
+                await error(message, "touch: cannot load to dictionary")
+              else:
+                if discord.Embed.from_dict(jsn):
+                  embed = discord.Embed.from_dict(jsn)
+                  await msg.edit(embed=embed)
+                  await message.channel.send("```\nEmbed message edited in #"+cnl.name+"\n```")
+                else:
+                  await error(message, "touch: cannot load dict to embed")
+            else:
+              await error(message, "touch: invalid message")
+          else:
+            await error(message, "touch: invalid channel")
+        else:
+          await error(message, "touch: invalid message link")
+      else:
+        await error(message, "touch: not enough arguments passed")
 
     #cat command - display message contents
     elif messagecontent.startswith(prefix+" cat"):
