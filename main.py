@@ -10,6 +10,9 @@ import requests #to check discord api for limits/bans
 from replit import db #database storage
 import time
 from datetime import datetime
+import sys
+import os.path
+import html
 
 #api limit checker
 #rate limits occur when you access the api too much. You can view Discord.py's api below. There it will tell you whether an action will access the api.
@@ -26,10 +29,83 @@ client = discord.Client(intents=intents)
 
 #declare vars
 joinrole = 928770525830971403
+redditChannel = 935549461457948715
 
 #error message
 async def error(message, code):
   await message.channel.send("```\n"+code+"\n```")
+
+async def checkReddit():
+  while True:
+    SUBREDDITS_TO_CHECK = ["Discord_Bots"]
+    FLAIRS = ["Bot Request [Paid]", "Bot Request [Existing ONLY]"]
+    NUM_POSTS_TO_CHECK = 10
+    WEBHOOK_URL = "https://discord.com/api/webhooks/935551698406096936/d_4O_7lRT1LLYRqFxf1hxCHvs8c2LXKNz55enN-5adte6W5aZRIJq9PBPZg8RwWFgFY7"
+    PATH = ""
+    
+    def getNumNewPosts(oldJson, latestJson):
+      for j in range(NUM_POSTS_TO_CHECK):
+        oldLatestPost = oldJson['data']['children'][j]['data']['permalink']
+        #if it reaches the end of the for loop then all posts are new
+        for i in range(NUM_POSTS_TO_CHECK):
+          latestPost = latestJson['data']['children'][i]['data']['permalink']
+          if latestPost == oldLatestPost:
+    	      print("Matched post after "+str(i)+" iteration")
+    	      return i,j
+          else:
+    	      print(latestPost + " != "+oldLatestPost)
+        print("Couldn't find the last saved post, trying the next last saved post...")
+      print("Failed to find any posts. Giving up and posting them all.")
+      return NUM_POSTS_TO_CHECK
+
+    print(datetime.now())
+    for sub in SUBREDDITS_TO_CHECK:
+      print("checking "+sub)
+      r = requests.get("https://old.reddit.com/r/"+sub+"/new/.json?count="+str(NUM_POSTS_TO_CHECK), headers = {'User-agent': 'Mozilla/5.0 (Windows NT 5.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Safari/537.36'})
+      latestJson = json.loads(r.text)
+    	
+      #Number of new posts since last check
+      newPosts = NUM_POSTS_TO_CHECK
+      numRemovedPosts = 0
+      if os.path.exists(PATH+sub+".json"):
+        with open(PATH+sub+".json","r") as f:
+          oldJson = json.loads(f.read())
+          newPosts,numRemovedPosts = getNumNewPosts(oldJson, latestJson)
+      else:
+        print("File not found. If this is the first time checking the subreddit, ignore this message.")
+        newPosts = 2
+      with open(PATH+sub+".json","w") as f:
+        f.write(r.text)
+      print("Number of new posts: "+str(newPosts))
+      for i in range(newPosts):
+        post = latestJson['data']['children'][i]['data']
+        description = post['link_flair_text']
+        if i==0 and numRemovedPosts>1:
+          description+="\nNote: The last post before this one was removed from this subreddit!"
+    
+        dataToSend = {
+          "username":"/r/"+sub,
+          "content":"<@427968672980533269>",
+          "embeds": [{
+    	      "title":html.unescape(post['title']),
+    	      "description":description,
+    	      "url":"https://reddit.com"+post['permalink']
+          }]
+        }
+        if post['url'].endswith(('.jpg', '.jpeg', '.png', '.gif')):
+          dataToSend['embeds'][0]["image"]= {
+    	      "url":post['url']
+          }
+        elif post['thumbnail'] != 'default':
+          dataToSend['embeds'][0]["image"]= {
+    	      "url":post['thumbnail']
+          }
+        if post['link_flair_text'] in FLAIRS:
+          r = requests.post(
+            WEBHOOK_URL,
+            json = dataToSend
+          )
+    await asyncio.sleep(5)
 
 async def checkCounters():
   while True:
@@ -270,10 +346,9 @@ async def on_message(message):
 
     #touch command - create embed
     elif messagecontent.startswith(prefix+" touch"):
-      splits = message.content.split(" ",4)
-      if len(splits) == 5:
-        channelID = splits[3][-37:-19]
-        messageID = splits[3][-18:]
+      splits = message.content.split(" ",3)
+      if len(splits) == 4:
+        channelID = splits[2]
         if splits[2].isnumeric():
           if message.guild.get_channel(int(splits[2])):
             cnl = message.guild.get_channel(int(splits[2]))
@@ -308,22 +383,22 @@ async def on_message(message):
               try:
                 jsn = json.loads(splits[3].replace("'",'"'))
               except:
-                await error(message, "touch: cannot load to dictionary")
+                await error(message, "nano: cannot load to dictionary")
               else:
                 if discord.Embed.from_dict(jsn):
                   embed = discord.Embed.from_dict(jsn)
                   await msg.edit(embed=embed)
                   await message.channel.send("```\nEmbed message edited in #"+cnl.name+"\n```")
                 else:
-                  await error(message, "touch: cannot load dict to embed")
+                  await error(message, "nano: cannot load dict to embed")
             else:
-              await error(message, "touch: invalid message")
+              await error(message, "nano: invalid message")
           else:
-            await error(message, "touch: invalid channel")
+            await error(message, "nano: invalid channel")
         else:
-          await error(message, "touch: invalid message link")
+          await error(message, "nano: invalid message link")
       else:
-        await error(message, "touch: not enough arguments passed")
+        await error(message, "nano: not enough arguments passed")
 
     #cat command - display message contents
     elif messagecontent.startswith(prefix+" cat"):
@@ -368,6 +443,7 @@ async def on_guild_join(guild):
   db[str(guild.id)] = {"prefix": "$"} #for database support
 
 client.loop.create_task(checkCounters())
+client.loop.create_task(checkReddit())
 
 keep_alive.keep_alive() 
 #keep the bot running after the window closes, use UptimeRobot to ping the website at least every <60min. to prevent the website from going to sleep, turning off the bot
