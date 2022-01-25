@@ -38,7 +38,7 @@ async def error(message, code):
 async def checkReddit():
   while True:
     SUBREDDITS_TO_CHECK = ["Discord_Bots"]
-    FLAIRS = ["Bot Request [Paid]", "Bot Request [Existing ONLY]"]
+    FLAIRS = ["Bot Request [Paid]", "Bot Request [Existing ONLY]", "Bot Request [Free]"]
     NUM_POSTS_TO_CHECK = 10
     WEBHOOK_URL = "https://discord.com/api/webhooks/935551698406096936/d_4O_7lRT1LLYRqFxf1hxCHvs8c2LXKNz55enN-5adte6W5aZRIJq9PBPZg8RwWFgFY7"
     PATH = ""
