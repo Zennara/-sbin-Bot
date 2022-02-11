@@ -13,6 +13,8 @@ from datetime import datetime
 import sys
 import os.path
 import html
+from discord import Webhook, AsyncWebhookAdapter
+import aiohttp
 
 #api limit checker
 #rate limits occur when you access the api too much. You can view Discord.py's api below. There it will tell you whether an action will access the api.
@@ -40,7 +42,7 @@ async def checkReddit():
     SUBREDDITS_TO_CHECK = ["Discord_Bots"]
     FLAIRS = ["Bot Request [Paid]", "Bot Request [Existing ONLY]", "Bot Request [Free]"]
     NUM_POSTS_TO_CHECK = 10
-    WEBHOOK_URL = "https://discord.com/api/webhooks/935551698406096936/d_4O_7lRT1LLYRqFxf1hxCHvs8c2LXKNz55enN-5adte6W5aZRIJq9PBPZg8RwWFgFY7"
+    WEBHOOK_URL = "https://discord.com/api/webhooks/936753114353131570/8Juj6azz7iN2uDkhWHenxXX-WmGnYcq6MWwznlN6KcceCYG5l4UTZadUPU8NPvmlrc6n"
     PATH = ""
     
     def getNumNewPosts(oldJson, latestJson):
@@ -83,28 +85,29 @@ async def checkReddit():
         if i==0 and numRemovedPosts>1:
           description+="\nNote: The last post before this one was removed from this subreddit!"
     
-        dataToSend = {
-          "username":"/r/"+sub,
-          "content":"<@427968672980533269>",
-          "embeds": [{
-    	      "title":html.unescape(post['title']),
-    	      "description":description,
-    	      "url":"https://reddit.com"+post['permalink']
-          }]
-        }
+        username = "/r/"+sub
+        content = "<@427968672980533269>"
+        embed = discord.Embed(title=html.unescape(post['title']), description=description, url="https://reddit.com"+post['permalink'])
+        print(post['url'])
         if post['url'].endswith(('.jpg', '.jpeg', '.png', '.gif')):
-          dataToSend['embeds'][0]["image"]= {
-    	      "url":post['url']
-          }
-        elif post['thumbnail'] != 'default':
-          dataToSend['embeds'][0]["image"]= {
-    	      "url":post['thumbnail']
-          }
-        if post['link_flair_text'] in FLAIRS:
-          r = requests.post(
-            WEBHOOK_URL,
-            json = dataToSend
-          )
+          embed.set_image(url=post['url'])
+        print(post["link_flair_text"])
+        if post["link_flair_text"] in FLAIRS:
+          print("done")
+          #get webhook
+          hooks = await client.get_channel(redditChannel).webhooks()
+          hookFind = False
+          if hooks:
+            x=0
+            for hook in hooks:
+              if hook.token != None:
+                webhook = hooks[x]
+                hookFind = True
+                break
+              x += 1
+          if not hookFind:
+            webhook= await client.get_channel(redditChannel).create_webhook(name="Reddit Updates",avatar=None,reason="For the /sbin/ bot")
+          await webhook.send(content=content, username=username, embed=embed)
     await asyncio.sleep(5)
 
 async def checkCounters():
