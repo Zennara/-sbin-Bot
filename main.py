@@ -4,7 +4,7 @@
 import discord #api
 import os #for virtual environment secrets on replit
 import asyncio #not needed unless creating loop tasks etc (you'll run into it)
-import json #to write db to a json file
+import json #for database
 import requests #to check discord api for limits/bans
 import time
 from datetime import datetime
@@ -22,6 +22,10 @@ try:
   print(f"You are being Rate Limited : {int(r.headers['Retry-After']) / 60} minutes left")
 except:
   print("No rate limit")
+
+f = open('database.json') #open json
+data = json.load(f) #read data
+f.close() #close
 
 #declare client
 intents = discord.Intents.all() #declare what Intents you use, these will be checked in the Discord dev portal
@@ -158,14 +162,14 @@ async def on_ready():
 async def on_raw_reaction_add(payload):
   if payload.member.id != client.user.id:
     for role in payload.member.guild.roles:
-      if [str(payload.channel_id),str(payload.message_id),str(role.id),str(payload.emoji)] in db[str(payload.guild_id)]["role_reactions"]:
+      if [str(payload.channel_id),str(payload.message_id),str(role.id),str(payload.emoji)] in data[str(payload.guild_id)]["role_reactions"]:
         await payload.member.add_roles(payload.member.guild.get_role(int(role.id)), atomic=True)
 
 @client.event
 async def on_raw_reaction_remove(payload):
   if payload.user_id != client.user.id:
     for role in client.get_guild(int(payload.guild_id)).roles:
-      if [str(payload.channel_id),str(payload.message_id),str(role.id),str(payload.emoji)] in db[str(payload.guild_id)]["role_reactions"]:
+      if [str(payload.channel_id),str(payload.message_id),str(role.id),str(payload.emoji)] in data[str(payload.guild_id)]["role_reactions"]:
         await client.get_guild(int(payload.guild_id)).get_member(int(payload.user_id)).remove_roles(client.get_guild(int(payload.guild_id)).get_role(int(role.id)), atomic=True)
 
 @client.event
@@ -180,22 +184,10 @@ async def on_message(message):
     return
 
   #get prefix
-  prefix = db[str(message.guild.id)]["prefix"]
+  prefix = data[str(message.guild.id)]["prefix"]
 
   #convert the message to all lowercase
   messagecontent = message.content.lower()
-
-  #this is to dump your databse into database.json. Change this to FALSE to stop this.
-  DUMP = True
-  if DUMP:
-    data2 = {}
-    count = 0
-    for key in db.keys():
-      data2[str(key)] = db[str(key)]
-      count += 1
-
-    with open("database.json", 'w') as f:
-      json.dump(str(data2), f)
 
   #add to history
   if messagecontent.startswith(prefix) and messagecontent.strip() != "$":
@@ -225,7 +217,8 @@ async def on_message(message):
     #this will clear the database if something is broken, WARNING: will delete all entries
     elif messagecontent == "$ clear":
       #my database entries are seperates by server id for each key. this works MOST of the time unless you have a large amount of data
-      db[str(message.guild.id)] = {"prefix": "$", "role_reactions":[]}
+      data[str(message.guild.id)] = {"prefix": "$", "role_reactions":[]}
+      writeData(data)
         
     #ping command
     elif messagecontent == prefix+" ping":
@@ -276,9 +269,9 @@ async def on_message(message):
     elif messagecontent.startswith(prefix+" ls"):
       if messagecontent == prefix+" ls roles":
         text = "```\nno role reactions found"
-        if db[str(message.guild.id)]["role_reactions"]:
+        if data[str(message.guild.id)]["role_reactions"]:
           text = "```\n"
-          for role in db[str(message.guild.id)]["role_reactions"]:
+          for role in data[str(message.guild.id)]["role_reactions"]:
             text += "#"+str(client.get_channel(int(role[0])))+"   "+str(role[1])+"   "+str(message.guild.get_role(int(role[2])))+"   "+str(role[3]) + "\n"
         await message.channel.send(text+"\n```")
         
@@ -303,7 +296,8 @@ async def on_message(message):
                     except:
                       await error(message, "cp: "+roleID+": invalid emoji")
                     else:
-                      db[str(message.guild.id)]["role_reactions"].append([channelID,messageID,roleID,emoji])
+                      data[str(message.guild.id)]["role_reactions"].append([channelID,messageID,roleID,emoji])
+                      writeData(data)
                       await message.channel.send("```\nrole reaction added\n```")
                   else:
                     await error(message, "cp: "+roleID+": invalid role")
@@ -329,8 +323,9 @@ async def on_message(message):
           roleID = splits[4].replace("<","").replace(">","").replace("&","").replace("@","")
           emoji = splits[5]
           if channelID.isnumeric() and messageID.isnumeric():
-            if [channelID,messageID,roleID,emoji] in db[str(message.guild.id)]["role_reactions"]:
-              db[str(message.guild.id)]["role_reactions"].remove([channelID,messageID,roleID,emoji])
+            if [channelID,messageID,roleID,emoji] in data[str(message.guild.id)]["role_reactions"]:
+              data[str(message.guild.id)]["role_reactions"].remove([channelID,messageID,roleID,emoji])
+              writeData(data)
               channel = client.get_channel(int(channelID))
               msg = await channel.fetch_message(int(messageID))
               await msg.remove_reaction(emoji, message.guild.get_member(client.user.id))
@@ -442,7 +437,29 @@ async def on_message(message):
   
 @client.event
 async def on_guild_join(guild):
-  db[str(guild.id)] = {"prefix": "$"} #for database support
+  data[str(guild.id)] = {"prefix": "$"} #for database support
+  writeData(data)
+
+  
+#function to re-read data again from json database
+def readData():
+  f = open('database.json') #open json
+  global data
+  data = json.load(f) #read data
+  f.close() #close
+
+#function to write json data
+def writeData(data):
+  # Serializing json
+  json_object = json.dumps(data, indent=2)
+ 
+  # Writing to sample.json
+  with open("database.json", "w") as outfile:
+    outfile.write(json_object)
+
+  #reread data
+  readData()
+
 
 client.loop.create_task(checkCounters())
 client.loop.create_task(checkReddit())
