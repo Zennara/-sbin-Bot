@@ -3,11 +3,9 @@
 #imports
 import discord #api
 import os #for virtual environment secrets on replit
-import keep_alive #this keeps our bot alive from the keep_alive.py file
 import asyncio #not needed unless creating loop tasks etc (you'll run into it)
 import json #to write db to a json file
 import requests #to check discord api for limits/bans
-from replit import db #database storage
 import time
 from datetime import datetime
 import sys
@@ -31,6 +29,7 @@ client = discord.Client(intents=intents)
 
 #declare vars
 joinrole = 928770525830971403
+guild = client.get_guild(806706495466766366)
 redditChannel = 935549461457948715
 
 #error message
@@ -95,7 +94,7 @@ async def checkReddit():
         if post["link_flair_text"] in FLAIRS:
           print("done")
           #get webhook
-          hooks = await client.get_channel(redditChannel).webhooks()
+          hooks = await guild.get_channel(redditChannel).webhooks()
           hookFind = False
           if hooks:
             x=0
@@ -448,7 +447,6 @@ async def on_guild_join(guild):
 client.loop.create_task(checkCounters())
 client.loop.create_task(checkReddit())
 
-keep_alive.keep_alive() 
 #keep the bot running after the window closes, use UptimeRobot to ping the website at least every <60min. to prevent the website from going to sleep, turning off the bot
 
 #run bot
