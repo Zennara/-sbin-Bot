@@ -250,7 +250,7 @@ async def on_message(message):
         # uname command
         elif messagecontent == prefix + " uname":
             await message.channel.send(
-                "```\n/sbin/ Bot\nAuthor:       Zennara#8377\nCreated:      1/7/2021\nPublic:       False\nDescription:  A custom bot for this server. This can't be found anywhere else.\n```")
+                "```\n/sbin/ Bot\nAuthor:       @Zennara\nCreated:      1/7/2021\nPublic:       False\nDescription:  A custom bot for this server. This can't be found anywhere else.\n```")
 
         # neofeatch
         elif messagecontent == prefix + " neofetch":
