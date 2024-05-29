@@ -371,7 +371,7 @@ async def on_message(message):
 
         # pwd
         elif messagecontent == prefix + " pwd":
-            await message.channel.send("```\nhttps://github.com/Zennara/-sbin-Bot\n```")
+            await message.channel.send("```\nhttps://github.com/Zennara/sbin-Bot\n```")
 
         # touch command - create embed
         elif messagecontent.startswith(prefix + " touch"):
