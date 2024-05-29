@@ -43,7 +43,6 @@ async def checkReddit():
         SUBREDDITS_TO_CHECK = ["Discord_Bots"]
         FLAIRS = ["Bot Request [Paid]", "Bot Request [Existing ONLY]", "Bot Request [Free]"]
         NUM_POSTS_TO_CHECK = 10
-        WEBHOOK_URL = "https://discord.com/api/webhooks/936753114353131570/8Juj6azz7iN2uDkhWHenxXX-WmGnYcq6MWwznlN6KcceCYG5l4UTZadUPU8NPvmlrc6n"
         PATH = ""
 
         def getNumNewPosts(oldJson, latestJson):
