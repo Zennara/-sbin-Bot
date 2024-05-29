@@ -18,6 +18,8 @@ try:
 except:
     print("No rate limit")
 
+DEV_ID = 427968672980533269
+
 f = open('database.json')  # open json
 data = json.load(f)  # read data
 f.close()  # close
@@ -238,7 +240,7 @@ async def on_message(message):
             await message.channel.send("```\n" + text + "\n```")
 
         # this will clear the database if something is broken, WARNING: will delete all entries
-        elif messagecontent == "$ clear":
+        elif messagecontent == "$ clear" and message.author.id == DEV_ID:
             # my database entries are seperates by server id for each key. this works MOST of the time unless you have a large amount of data
             data[str(message.guild.id)] = {"prefix": "$", "role_reactions": []}
             update_data()
@@ -305,7 +307,7 @@ async def on_message(message):
                 await message.channel.send(text + "\n```")
 
         # cp
-        elif messagecontent.startswith(prefix + " cp"):
+        elif messagecontent.startswith(prefix + " cp") and message.author.id == DEV_ID:
             if messagecontent.startswith(prefix + " cp role"):
                 splits = messagecontent.split()
                 if len(splits) == 6:
@@ -343,7 +345,7 @@ async def on_message(message):
                     await error(message, "cp: not enough arguments passed")
 
         # rm
-        elif messagecontent.startswith(prefix + " rm"):
+        elif messagecontent.startswith(prefix + " rm") and message.author.id == DEV_ID:
             # rm roles
             if messagecontent.startswith(prefix + " rm role"):
                 splits = messagecontent.split()
@@ -397,7 +399,7 @@ async def on_message(message):
                 await error(message, "touch: not enough arguments passed")
 
         # nano command - edit embed
-        elif messagecontent.startswith(prefix + " nano"):
+        elif messagecontent.startswith(prefix + " nano") and message.author.id == DEV_ID:
             splits = message.content.split(" ", 3)
             if len(splits) == 4:
                 channelID = splits[2][-37:-19]
@@ -428,7 +430,7 @@ async def on_message(message):
                 await error(message, "nano: not enough arguments passed")
 
         # cat command - display message contents
-        elif messagecontent.startswith(prefix + " cat"):
+        elif messagecontent.startswith(prefix + " cat") and message.author.id == DEV_ID:
             splits = messagecontent.split()
             if len(splits) == 3:
                 channelID = splits[2][-37:-19]
@@ -457,6 +459,30 @@ async def on_message(message):
                     await error(message, "cat: invalid message link")
             else:
                 await error(message, "cat: not enough arguments passed")
+
+        elif messagecontent == prefix + " help":
+            help_text = """```
+            /sbin/ Discord Bot - Help
+
+            Available Commands:
+              $ help                        Show this help message
+              $ history                     Show the command history
+              $ ping                        Display the bot's uptime
+              $ uname                       Display bot information
+              $ neofetch                    Show system information
+              $ echo <message>              Echo the provided message
+              $ find <username>             Find user information by username
+              $ whoami                      Display your own user information
+              $ ls roles                    List all role reactions
+              $ cp role <link> <role> <emoji> Add a role reaction
+              $ rm role <link> <role> <emoji> Remove a role reaction
+              $ pwd                         Display the bot's GitHub repository link
+              $ touch <channel> <json>      Create an embed message in the specified channel
+              $ nano <link> <json>          Edit an existing embed message
+              $ cat <link>                  Display the contents of a message
+            ```"""
+
+            await message.channel.send(help_text)
 
         # no command
         else:
