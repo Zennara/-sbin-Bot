@@ -28,11 +28,11 @@ f.close()  # close
 
 # declare client
 intents = discord.Intents.all()  # declare what Intents you use, these will be checked in the Discord dev portal
-client = discord.Client(intents=intents)
+client = discord.Bot(intents=intents)
 
 # declare vars
 joinrole = 928770525830971403
-guild = client.get_guild(806706495466766366)
+guild = None
 redditChannel = 935549461457948715
 
 
@@ -42,6 +42,11 @@ async def error(message, code):
 
 
 async def checkReddit():
+    await client.wait_until_ready()
+    global guild
+    for guildx in client.guilds:
+        guild = guildx
+        break
     while True:
         SUBREDDITS_TO_CHECK = ["Discord_Bots"]
         FLAIRS = ["Bot Request [Paid]", "Bot Request [Existing ONLY]", "Bot Request [Free]"]
@@ -90,7 +95,7 @@ async def checkReddit():
                 if i == 0 and numRemovedPosts > 1:
                     description += "\nNote: The last post before this one was removed from this subreddit!"
 
-                username = "/r/" + sub
+                username = "/r/" + sub.replace("Discord", "CordDis").replace("discord", "corddis")
                 content = "<@427968672980533269>"
                 embed = discord.Embed(title=html.unescape(post['title']), description=description,
                                       url="https://reddit.com" + post['permalink'])
