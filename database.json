@@ -1,1 +1,6 @@
-"{'806706495466766366': ObservedDict(value={'prefix': '$', 'role_reactions': ObservedList(value=[])})}"
+{
+  "806706495466766366": {
+    "prefix": "$",
+    "role_reactions": []
+  }
+}

@@ -236,7 +236,7 @@ async def on_message(message):
         elif messagecontent == "$ clear":
             # my database entries are seperates by server id for each key. this works MOST of the time unless you have a large amount of data
             data[str(message.guild.id)] = {"prefix": "$", "role_reactions": []}
-            writeData(data)
+            update_data()
 
         # ping command
         elif messagecontent == prefix + " ping":
@@ -322,7 +322,7 @@ async def on_message(message):
                                         else:
                                             data[str(message.guild.id)]["role_reactions"].append(
                                                 [channelID, messageID, roleID, emoji])
-                                            writeData(data)
+                                            update_data()
                                             await message.channel.send("```\nrole reaction added\n```")
                                     else:
                                         await error(message, "cp: " + roleID + ": invalid role")
@@ -350,7 +350,7 @@ async def on_message(message):
                     if channelID.isnumeric() and messageID.isnumeric():
                         if [channelID, messageID, roleID, emoji] in data[str(message.guild.id)]["role_reactions"]:
                             data[str(message.guild.id)]["role_reactions"].remove([channelID, messageID, roleID, emoji])
-                            writeData(data)
+                            update_data()
                             channel = client.get_channel(int(channelID))
                             msg = await channel.fetch_message(int(messageID))
                             await msg.remove_reaction(emoji, message.guild.get_member(client.user.id))
@@ -465,28 +465,18 @@ async def on_message(message):
 @client.event
 async def on_guild_join(guild):
     data[str(guild.id)] = {"prefix": "$"}  # for database support
-    writeData(data)
+    update_data()
 
 
-# function to re-read data again from json database
-def readData():
-    f = open('database.json')  # open json
+# Function to update data in the data.json file
+def update_data():
     global data
-    data = json.load(f)  # read data
-    f.close()  # close
-
-
-# function to write json data
-def writeData(data):
-    # Serializing json
     json_object = json.dumps(data, indent=2)
-
-    # Writing to sample.json
-    with open("database.json", "w") as outfile:
+    with open("database.json", "w", encoding="utf-8") as outfile:
         outfile.write(json_object)
 
-    # reread data
-    readData()
+    with open('database.json', encoding="utf-8") as f:
+        data = json.load(f)
 
 
 client.loop.create_task(checkCounters())
