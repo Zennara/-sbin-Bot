@@ -11,7 +11,6 @@ import os.path
 import html
 
 # api limit checker
-# rate limits occur when you access the api too much. You can view Discord.py's api below. There it will tell you whether an action will access the api.
 # https://discordpy.readthedocs.io/en/stable/api.html
 r = requests.head(url="https://discord.com/api/v1")
 try:
@@ -21,6 +20,10 @@ except:
 
 f = open('database.json')  # open json
 data = json.load(f)  # read data
+f.close()  # close
+
+f = open('config.json')  # open json
+config = json.load(f)  # read data
 f.close()  # close
 
 # declare client
@@ -492,5 +495,4 @@ client.loop.create_task(checkReddit())
 # keep the bot running after the window closes, use UptimeRobot to ping the website at least every <60min. to prevent the website from going to sleep, turning off the bot
 
 # run bot
-# Add a secret environment variable named TOKEN in replit (lock icon on left sidebar)
-client.run(os.environ.get("TOKEN"))
+client.run(config['token'])
