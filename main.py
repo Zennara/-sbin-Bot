@@ -11,7 +11,7 @@ from datetime import datetime
 import sys
 import os.path
 import html
-from discord import Webhook, AsyncWebhookAdapter
+from discord import Webhook
 import aiohttp
 
 # api limit checker
