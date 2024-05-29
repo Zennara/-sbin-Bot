@@ -6,13 +6,9 @@ import os  # for virtual environment secrets on replit
 import asyncio  # not needed unless creating loop tasks etc (you'll run into it)
 import json  # for database
 import requests  # to check discord api for limits/bans
-import time
 from datetime import datetime
-import sys
 import os.path
 import html
-from discord import Webhook
-import aiohttp
 
 # api limit checker
 # rate limits occur when you access the api too much. You can view Discord.py's api below. There it will tell you whether an action will access the api.
