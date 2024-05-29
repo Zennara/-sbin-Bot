@@ -250,14 +250,14 @@ async def on_message(message):
             await message.channel.send("""```
            , - ~ ~ ~ - ,             /sbin/ Discord Bot
        , '               ' ,       . ------------------
-     ,      .                ,     . Host: repl.it
+     ,      .                ,     . Host: Linode.com
     ,     /#|#\               ,    . Uptime: """ + str(uptime) + """
-   ,      # |                  ,   . Version: 1.0.0
-   ,      \#|#\                ,   . Library: Discord.py 1.7.3
-   ,        | #                ,   . Packages: 9
+   ,      # |                  ,   . Version: 1.1.0
+   ,      \#|#\                ,   . Library: Py-Cord 2.5.0
+   ,        | #                ,   . Packages: 15
     ,     \#|#/  ______       ,    . Theme: Linux Terminal
      ,      '                ,     . Prefix: $
-       ,                   ,       . Author: Zennara#8377
+       ,                   ,       . Author: @Zennara
          ' - , _ _ _ , - '         . Status: Custom, Private
       ```""")
 
@@ -362,7 +362,7 @@ async def on_message(message):
 
         # pwd
         elif messagecontent == prefix + " pwd":
-            await message.channel.send("```\nhttps://replit.com/@KeaganLandfried/sbin-bot\n```")
+            await message.channel.send("```\nhttps://github.com/Zennara/-sbin-Bot\n```")
 
         # touch command - create embed
         elif messagecontent.startswith(prefix + " touch"):
