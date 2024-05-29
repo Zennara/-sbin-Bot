@@ -1,4 +1,4 @@
-# Discord.py Bot Template, by Zennara#8377
+# /sbin/ Discord Bot, by @Zennara
 
 # imports
 import discord  # api
